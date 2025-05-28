@@ -273,7 +273,7 @@ export default function FAQPage() {
         >
           <h2 className="text-2xl font-bold text-white mb-4">Still have questions?</h2>
           <p className="text-gray-300 mb-6">
-            Can't find what you're looking for? Our support team is here to help you 24/7.
+            Can not find what you are looking for? Our support team is here to help you 24/7.
           </p>
           <motion.a
             href="/contact"

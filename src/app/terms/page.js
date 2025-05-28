@@ -130,7 +130,7 @@ export default function TermsPage() {
         >
           <h2 className="text-2xl font-bold text-white mb-4">Agreement Overview</h2>
           <p className="text-gray-300 leading-relaxed mb-4">
-            These Terms of Service ("Terms") govern your use of the AstroConnect platform and services. By creating an
+            These Terms of Service Terms govern your use of the AstroConnect platform and services. By creating an
             account or using our services, you enter into a legally binding agreement with us.
           </p>
           <p className="text-gray-300 leading-relaxed">

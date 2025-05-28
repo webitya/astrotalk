@@ -1,46 +1,34 @@
 "use client"
 
-import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Stars, Text3D, Environment } from "@react-three/drei"
-import { motion } from "framer-motion"
-
-function FloatingCrystal({ position }) {
-  return (
-    <motion.mesh
-      position={position}
-      animate={{
-        rotateY: [0, Math.PI * 2],
-        y: [position[1] - 0.5, position[1] + 0.5, position[1] - 0.5],
-      }}
-      transition={{
-        rotateY: { duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "linear" },
-        y: { duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
-      }}
-    >
-      <octahedronGeometry args={[0.5]} />
-      <meshStandardMaterial color="#8b5cf6" transparent opacity={0.8} />
-    </motion.mesh>
-  )
-}
+import { useRef } from "react"
+import { useFrame } from "@react-three/fiber"
+import { Stars } from "@react-three/drei"
 
 export default function Homepage3D() {
+  const starsRef = useRef()
+
+  useFrame((state, delta) => {
+    if (starsRef.current) {
+      starsRef.current.rotation.y += delta * 0.05
+    }
+  })
+
   return (
-    <Canvas className="absolute inset-0 z-0">
-      <Environment preset="night" />
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} />
-      <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+    <>
+      {/* Ambient light */}
+      <ambientLight intensity={0.2} />
 
-      <FloatingCrystal position={[-3, 2, -2]} />
-      <FloatingCrystal position={[3, -1, -3]} />
-      <FloatingCrystal position={[0, 3, -4]} />
+      {/* Directional light */}
+      <directionalLight position={[5, 5, 5]} intensity={0.5} color="#f5e3b9" />
 
-      <Text3D font="/fonts/Geist_Bold.json" size={0.8} height={0.1} position={[-2, 0, -2]}>
-        AstroConnect
-        <meshStandardMaterial color="#fbbf24" />
-      </Text3D>
+      {/* Animated stars background */}
+      <Stars ref={starsRef} radius={100} depth={50} count={3000} factor={4} saturation={0.5} fade speed={1} />
 
-      <OrbitControls enableZoom={false} enablePan={false} />
-    </Canvas>
+      {/* Simple glowing sphere */}
+      <mesh position={[0, 0, -5]}>
+        <sphereGeometry args={[1, 16, 16]} />
+        <meshStandardMaterial color="#ff7b00" emissive="#ff7b00" emissiveIntensity={0.5} />
+      </mesh>
+    </>
   )
 }

@@ -3,13 +3,13 @@
 import { useState } from "react"
 import { motion } from "framer-motion"
 import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Cylinder, MeshDistortMaterial } from "@react-three/drei"
+import { OrbitControls, Cylinder } from "@react-three/drei"
 import { Payment, AccountBalanceWallet, CreditCard, Security, CheckCircle, Star } from "@mui/icons-material"
 
 function AnimatedCylinder() {
   return (
     <Cylinder args={[1, 1, 2, 32]}>
-      <MeshDistortMaterial color="#10b981" attach="material" distort={0.4} speed={1.5} roughness={0} />
+      <meshStandardMaterial color="#10b981" attach="material" />
     </Cylinder>
   )
 }

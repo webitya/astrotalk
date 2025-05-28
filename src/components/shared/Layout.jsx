@@ -7,12 +7,14 @@ export default function Layout({ children, scene3D, background = "from-indigo-90
   return (
     <div className={`min-h-screen bg-gradient-to-br ${background} relative overflow-hidden`}>
       {scene3D && (
-        <Canvas className="absolute inset-0 z-0">
-          <ambientLight intensity={0.6} />
-          <directionalLight position={[0, 0, 5]} />
-          {scene3D}
-          <OrbitControls enableZoom={false} enablePan={false} autoRotate />
-        </Canvas>
+        <div className="absolute inset-0 z-0">
+          <Canvas>
+            <ambientLight intensity={0.6} />
+            <directionalLight position={[0, 0, 5]} />
+            {scene3D}
+            <OrbitControls enableZoom={false} enablePan={false} autoRotate />
+          </Canvas>
+        </div>
       )}
 
       <div className="relative z-10">{children}</div>

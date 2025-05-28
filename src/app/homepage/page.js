@@ -1,58 +1,71 @@
 "use client"
-import { motion } from "framer-motion"
+
 import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Stars, Text3D, Environment } from "@react-three/drei"
-import HomepageNavigation from "@/components/homepage/HomepageNavigation"
-import HomepageHero from "@/components/homepage/HomepageHero"
-import HomepageFeatures from "@/components/homepage/HomepageFeatures"
-import HomepageCTA from "@/components/homepage/HomepageCTA"
-import Homepage3D from "@/components/homepage/Homepage3D"
-
-function FloatingCrystal({ position }) {
-  return (
-    <motion.mesh
-      position={position}
-      animate={{
-        rotateY: [0, Math.PI * 2],
-        y: [position[1] - 0.5, position[1] + 0.5, position[1] - 0.5],
-      }}
-      transition={{
-        rotateY: { duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "linear" },
-        y: { duration: 3, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" },
-      }}
-    >
-      <octahedronGeometry args={[0.5]} />
-      <meshStandardMaterial color="#8b5cf6" transparent opacity={0.8} />
-    </motion.mesh>
-  )
-}
-
-function Scene3D() {
-  return (
-    <Canvas className="absolute inset-0 z-0">
-      <Environment preset="night" />
-      <ambientLight intensity={0.5} />
-      <pointLight position={[10, 10, 10]} />
-      <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-
-      <FloatingCrystal position={[-3, 2, -2]} />
-      <FloatingCrystal position={[3, -1, -3]} />
-      <FloatingCrystal position={[0, 3, -4]} />
-
-      <Text3D font="/fonts/Geist_Bold.json" size={0.8} height={0.1} position={[-2, 0, -2]}>
-        AstroConnect
-        <meshStandardMaterial color="#fbbf24" />
-      </Text3D>
-
-      <OrbitControls enableZoom={false} enablePan={false} />
-    </Canvas>
-  )
-}
+import { Suspense } from "react"
+import HomepageNavigation from "../../components/homepage/HomepageNavigation"
+import HomepageHero from "../../components/homepage/HomepageHero"
+import HomepageFeatures from "../../components/homepage/HomepageFeatures"
+import HomepageCTA from "../../components/homepage/HomepageCTA"
+import Homepage3D from "../../components/homepage/Homepage3D"
+import { motion } from "framer-motion"
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 relative overflow-hidden">
-      <Homepage3D />
+      {/* Animated gradient background */}
+      <motion.div
+        className="absolute inset-0 opacity-30 z-0"
+        animate={{
+          background: [
+            "radial-gradient(circle at 30% 20%, rgba(76, 29, 149, 0.8) 0%, rgba(30, 58, 138, 0.4) 50%, rgba(79, 70, 229, 0.2) 100%)",
+            "radial-gradient(circle at 70% 60%, rgba(76, 29, 149, 0.8) 0%, rgba(30, 58, 138, 0.4) 50%, rgba(79, 70, 229, 0.2) 100%)",
+            "radial-gradient(circle at 40% 80%, rgba(76, 29, 149, 0.8) 0%, rgba(30, 58, 138, 0.4) 50%, rgba(79, 70, 229, 0.2) 100%)",
+            "radial-gradient(circle at 30% 20%, rgba(76, 29, 149, 0.8) 0%, rgba(30, 58, 138, 0.4) 50%, rgba(79, 70, 229, 0.2) 100%)",
+          ],
+        }}
+        transition={{
+          duration: 20,
+          repeat: Number.POSITIVE_INFINITY,
+          ease: "linear",
+        }}
+      />
+
+      {/* 3D Canvas */}
+      <div className="absolute inset-0 z-0">
+        <Canvas>
+          <Suspense fallback={null}>
+            <Homepage3D />
+          </Suspense>
+        </Canvas>
+      </div>
+
+      {/* Floating particles */}
+      <div className="absolute inset-0 z-0 overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute rounded-full bg-white"
+            style={{
+              width: Math.random() * 3 + 1 + "px",
+              height: Math.random() * 3 + 1 + "px",
+              left: Math.random() * 100 + "%",
+              top: Math.random() * 100 + "%",
+              opacity: Math.random() * 0.5 + 0.3,
+            }}
+            animate={{
+              y: [0, -Math.random() * 100 - 50],
+              opacity: [0.7, 0],
+            }}
+            transition={{
+              duration: Math.random() * 10 + 10,
+              repeat: Number.POSITIVE_INFINITY,
+              delay: Math.random() * 5,
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Content */}
       <HomepageNavigation />
       <HomepageHero />
       <HomepageFeatures />

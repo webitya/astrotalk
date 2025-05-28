@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import { motion } from "framer-motion"
 import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Stars, Text3D } from "@react-three/drei"
+import { OrbitControls, Stars } from "@react-three/drei"
 import { Star, Schedule, Chat, Language, Search, FilterList, Favorite, FavoriteBorder } from "@mui/icons-material"
 
 function Scene3D() {
@@ -12,12 +12,6 @@ function Scene3D() {
       <ambientLight intensity={0.4} />
       <pointLight position={[10, 10, 10]} />
       <Stars radius={100} depth={50} count={3000} factor={4} saturation={0} fade speed={1} />
-
-      <Text3D font="/fonts/Geist_Bold.json" size={0.5} height={0.05} position={[-1.5, 2, -3]}>
-        Find Your Guide
-        <meshStandardMaterial color="#fbbf24" />
-      </Text3D>
-
       <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.5} />
     </Canvas>
   )

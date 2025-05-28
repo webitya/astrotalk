@@ -13,11 +13,13 @@ export default function LoginForm() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
   const router = useRouter()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setIsLoading(true)
+    setError("")
 
     try {
       const response = await fetch("/api/auth/login", {
@@ -28,17 +30,18 @@ export default function LoginForm() {
         body: JSON.stringify(formData),
       })
 
+      const data = await response.json()
+
       if (response.ok) {
-        const data = await response.json()
         localStorage.setItem("token", data.token)
         localStorage.setItem("user", JSON.stringify(data.user))
         router.push("/dashboard")
       } else {
-        alert("Login failed. Please check your credentials.")
+        setError(data.message || "Login failed. Please check your credentials.")
       }
     } catch (error) {
       console.error("Login error:", error)
-      alert("An error occurred. Please try again.")
+      setError("An error occurred. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -76,6 +79,16 @@ export default function LoginForm() {
           Sign in to continue your cosmic journey
         </motion.p>
       </div>
+
+      {error && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-red-500/20 border border-red-500/50 rounded-lg p-3 mb-6 text-red-200 text-sm"
+        >
+          {error}
+        </motion.div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 }}>

@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion"
 import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Stars, Text3D, Environment } from "@react-three/drei"
+import { OrbitControls, Stars, Environment } from "@react-three/drei"
 import { Psychology, Star, People, Security, Verified, TrendingUp, Favorite, EmojiEvents } from "@mui/icons-material"
 
 function Scene3D() {
@@ -12,12 +12,6 @@ function Scene3D() {
       <ambientLight intensity={0.4} />
       <pointLight position={[10, 10, 10]} />
       <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
-
-      <Text3D font="/fonts/Geist_Bold.json" size={0.6} height={0.1} position={[-2, 1, -3]}>
-        Our Story
-        <meshStandardMaterial color="#fbbf24" />
-      </Text3D>
-
       <OrbitControls enableZoom={false} enablePan={false} autoRotate autoRotateSpeed={0.2} />
     </Canvas>
   )
@@ -101,7 +95,7 @@ export default function AboutPage() {
             </span>
           </h1>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-            Bridging ancient wisdom with modern technology to provide authentic astrological guidance for your life's
+            Bridging ancient wisdom with modern technology to provide authentic astrological guidance for your life s
             most important decisions.
           </p>
         </motion.div>
@@ -153,7 +147,7 @@ export default function AboutPage() {
               </p>
               <p className="text-gray-300 leading-relaxed">
                 Today, AstroConnect serves thousands of users worldwide, providing them with personalized insights,
-                guidance, and support through life's challenges and opportunities. We're proud to be at the forefront of
+                guidance, and support through life s challenges and opportunities. We are proud to be at the forefront of
                 digital astrology, maintaining the authenticity and depth of traditional practices while making them
                 accessible to a global audience.
               </p>

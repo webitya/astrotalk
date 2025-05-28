@@ -3,21 +3,13 @@
 import { useState, useEffect, useRef } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Canvas } from "@react-three/fiber"
-import { OrbitControls, Sphere, MeshDistortMaterial } from "@react-three/drei"
+import { OrbitControls, Sphere } from "@react-three/drei"
 import { Send, Timer, Star, Phone, VideoCall, MoreVert, EmojiEmotions } from "@mui/icons-material"
 
 function FloatingSphere({ position, color }) {
   return (
     <Sphere args={[0.5, 32, 32]} position={position}>
-      <MeshDistortMaterial
-        color={color}
-        attach="material"
-        distort={0.3}
-        speed={1}
-        roughness={0}
-        transparent
-        opacity={0.6}
-      />
+      <meshStandardMaterial color={color} attach="material" roughness={0} transparent opacity={0.6} />
     </Sphere>
   )
 }

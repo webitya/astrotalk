@@ -209,7 +209,7 @@ export default function PrivacyPage() {
         >
           <h2 className="text-2xl font-bold text-white mb-4">Questions About Privacy?</h2>
           <p className="text-gray-300 mb-6">
-            If you have any questions about this Privacy Policy or our data practices, please don't hesitate to contact
+            If you have any questions about this Privacy Policy or our data practices, please do not hesitate to contact
             us.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

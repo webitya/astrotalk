@@ -1,11 +1,22 @@
 "use client"
 
-import { Torus, MeshDistortMaterial } from "@react-three/drei"
+import { useRef } from "react"
+import { useFrame } from "@react-three/fiber"
+import { Torus } from "@react-three/drei"
 
 export default function Dashboard3D() {
+  const meshRef = useRef()
+
+  useFrame((state) => {
+    if (meshRef.current) {
+      meshRef.current.rotation.x = state.clock.elapsedTime * 0.3
+      meshRef.current.rotation.y = state.clock.elapsedTime * 0.5
+    }
+  })
+
   return (
-    <Torus args={[1, 0.4, 16, 100]}>
-      <MeshDistortMaterial color="#fbbf24" attach="material" distort={0.5} speed={2} roughness={0} />
+    <Torus ref={meshRef} args={[1, 0.4, 16, 100]}>
+      <meshStandardMaterial color="#fbbf24" roughness={0.2} metalness={0.5} />
     </Torus>
   )
 }

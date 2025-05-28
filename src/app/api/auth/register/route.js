@@ -1,56 +1,60 @@
 import { NextResponse } from "next/server"
-import bcrypt from "bcryptjs"
-import jwt from "jsonwebtoken"
-
-// Mock database - In production, use a real database
-const users = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "user@example.com",
-    password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi",
-    role: "user",
-    phone: "+91 9876543210",
-  },
-]
+import { createUser, findUserByEmail } from "../../../../lib/database.js"
+import { generateToken, hashPassword } from "../../../../lib/auth.js"
+import { validateUserRegistration } from "../../../../lib/validation.js"
+import { sendEmail, generateWelcomeEmail } from "../../../../lib/email.js"
+import { ConflictError, ValidationError, handleApiError } from "../../../../lib/errors.js"
 
 export async function POST(request) {
   try {
-    const { name, email, phone, password, role = "user" } = await request.json()
+    const body = await request.json()
+
+    // Validate input data
+    const validation = validateUserRegistration(body)
+    if (!validation.isValid) {
+      throw new ValidationError(validation.errors.join(", "))
+    }
+
+    const { name, email, phone, password } = body
 
     // Check if user already exists
-    const existingUser = users.find((u) => u.email === email)
+    const existingUser = await findUserByEmail(email)
     if (existingUser) {
-      return NextResponse.json({ message: "User already exists with this email" }, { status: 400 })
+      throw new ConflictError("User already exists with this email")
     }
 
     // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10)
+    const hashedPassword = await hashPassword(password)
 
-    // Create new user
-    const newUser = {
-      id: users.length + 1,
+    // Create user
+    const newUser = await createUser({
       name,
       email,
       phone,
       password: hashedPassword,
-      role,
-      createdAt: new Date().toISOString(),
+      role: "user",
+      isVerified: true,
+    })
+
+    // Generate token
+    const token = generateToken(newUser)
+
+    // Send welcome email
+    try {
+      await sendEmail({
+        to: email,
+        subject: "Welcome to AstroConnect!",
+        html: generateWelcomeEmail(name),
+      })
+    } catch (emailError) {
+      console.error("Failed to send welcome email:", emailError)
+      // Don't fail registration if email fails
     }
 
-    users.push(newUser)
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: newUser.id, email: newUser.email, role: newUser.role },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" },
-    )
-
-    // Return user data (without password)
+    // Remove password from response
     const { password: _, ...userWithoutPassword } = newUser
 
-    return NextResponse.json(
+    const response = NextResponse.json(
       {
         message: "Registration successful",
         token,
@@ -58,8 +62,18 @@ export async function POST(request) {
       },
       { status: 201 },
     )
+
+    // Set HTTP-only cookie
+    response.cookies.set("auth-token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    })
+
+    return response
   } catch (error) {
-    console.error("Registration error:", error)
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
+    const { message, statusCode } = handleApiError(error)
+    return NextResponse.json({ message }, { status: statusCode })
   }
 }

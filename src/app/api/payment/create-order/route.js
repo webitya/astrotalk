@@ -1,31 +1,54 @@
 import { NextResponse } from "next/server"
-import Razorpay from "razorpay"
-
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID,
-  key_secret: process.env.RAZORPAY_KEY_SECRET,
-})
+import { getUserFromRequest } from "../../../../lib/auth.js"
+import { createRazorpayOrder } from "../../../../lib/razorpay.js"
+import { createPayment } from "../../../../lib/database.js"
+import { validatePayment } from "../../../../lib/validation.js"
+import { AuthenticationError, ValidationError, handleApiError } from "../../../../lib/errors.js"
 
 export async function POST(request) {
   try {
-    const { amount } = await request.json()
-
-    const options = {
-      amount: amount * 100, // Razorpay expects amount in paise
-      currency: "INR",
-      receipt: `receipt_${Date.now()}`,
-      payment_capture: 1,
+    // Authenticate user
+    const user = getUserFromRequest(request)
+    if (!user) {
+      throw new AuthenticationError()
     }
 
-    const order = await razorpay.orders.create(options)
+    const body = await request.json()
+
+    // Validate input data
+    const validation = validatePayment(body)
+    if (!validation.isValid) {
+      throw new ValidationError(validation.errors.join(", "))
+    }
+
+    const { amount } = body
+
+    // Create Razorpay order
+    const orderResult = await createRazorpayOrder({
+      amount,
+      receipt: `recharge_${user.userId}_${Date.now()}`,
+    })
+
+    if (!orderResult.success) {
+      throw new Error(orderResult.error)
+    }
+
+    // Create payment record
+    await createPayment({
+      userId: user.userId,
+      amount,
+      type: "recharge",
+      status: "pending",
+      razorpayOrderId: orderResult.order.id,
+    })
 
     return NextResponse.json({
-      id: order.id,
-      amount: order.amount,
-      currency: order.currency,
+      id: orderResult.order.id,
+      amount: orderResult.order.amount,
+      currency: orderResult.order.currency,
     })
   } catch (error) {
-    console.error("Order creation error:", error)
-    return NextResponse.json({ message: "Failed to create order" }, { status: 500 })
+    const { message, statusCode } = handleApiError(error)
+    return NextResponse.json({ message }, { status: statusCode })
   }
 }

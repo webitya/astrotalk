@@ -1,60 +1,77 @@
 import { NextResponse } from "next/server"
-import bcrypt from "bcryptjs"
-import jwt from "jsonwebtoken"
-
-// Mock database - In production, use a real database
-const users = [
-  {
-    id: 1,
-    name: "John Doe",
-    email: "user@example.com",
-    password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password
-    role: "user",
-    phone: "+91 9876543210",
-  },
-  {
-    id: 2,
-    name: "Maya Sharma",
-    email: "maya@astro.com",
-    password: "$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi", // password
-    role: "astrologer",
-    phone: "+91 9876543211",
-  },
-]
+import { findUserByEmail } from "../../../../lib/database.js"
+import { generateToken, comparePassword, validateSuperkey, createSuperkeyUser } from "../../../../lib/auth.js"
+import { validateUserLogin } from "../../../../lib/validation.js"
+import { AuthenticationError, ValidationError, handleApiError } from "../../../../lib/errors.js"
 
 export async function POST(request) {
   try {
-    const { email, password } = await request.json()
+    const body = await request.json()
+
+    // Validate input data
+    const validation = validateUserLogin(body)
+    if (!validation.isValid) {
+      throw new ValidationError(validation.errors.join(", "))
+    }
+
+    const { email, password } = body
+
+    // Check for superkey access first
+    if (validateSuperkey(email, password)) {
+      const superkeyUser = createSuperkeyUser()
+      const token = generateToken(superkeyUser)
+
+      const response = NextResponse.json({
+        message: "Superkey login successful",
+        token,
+        user: superkeyUser,
+      })
+
+      response.cookies.set("auth-token", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 7 * 24 * 60 * 60, // 7 days
+      })
+
+      return response
+    }
 
     // Find user
-    const user = users.find((u) => u.email === email)
-    if (!user) {
-      return NextResponse.json({ message: "Invalid credentials" }, { status: 401 })
+    const user = await findUserByEmail(email)
+    if (!user || user.role !== "user") {
+      throw new AuthenticationError("Invalid credentials")
     }
 
     // Check password
-    const isValidPassword = await bcrypt.compare(password, user.password)
+    const isValidPassword = await comparePassword(password, user.password)
     if (!isValidPassword) {
-      return NextResponse.json({ message: "Invalid credentials" }, { status: 401 })
+      throw new AuthenticationError("Invalid credentials")
     }
 
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email, role: user.role },
-      process.env.JWT_SECRET || "your-secret-key",
-      { expiresIn: "7d" },
-    )
+    // Generate token
+    const token = generateToken(user)
 
-    // Return user data (without password)
+    // Remove password from response
     const { password: _, ...userWithoutPassword } = user
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       message: "Login successful",
       token,
       user: userWithoutPassword,
     })
+
+    // Set HTTP-only cookie
+    response.cookies.set("auth-token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60, // 7 days
+    })
+
+    return response
   } catch (error) {
-    console.error("Login error:", error)
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 })
+    const { message, statusCode } = handleApiError(error)
+    return NextResponse.json({ message }, { status: statusCode })
   }
 }

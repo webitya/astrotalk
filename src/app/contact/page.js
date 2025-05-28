@@ -152,7 +152,7 @@ export default function ContactPage() {
           </motion.div>
           <h1 className="text-4xl font-bold text-white mb-4">Message Sent!</h1>
           <p className="text-xl text-gray-300 mb-6">
-            Thank you for contacting us. We'll get back to you within 24 hours.
+            Thank you for contacting us. We will get back to you within 24 hours.
           </p>
           <motion.button
             whileHover={{ scale: 1.05 }}
@@ -179,7 +179,7 @@ export default function ContactPage() {
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500"> Touch</span>
           </h1>
           <p className="text-xl text-gray-300 max-w-2xl mx-auto">
-            Have questions about your cosmic journey? We're here to help guide you to the answers you seek.
+            Have questions about your cosmic journey? We are here to help guide you to the answers you seek.
           </p>
         </motion.div>
 
