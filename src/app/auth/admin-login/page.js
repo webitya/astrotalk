@@ -9,49 +9,50 @@ import { Card } from "../../../components/shared/Card"
 import { LoadingSpinner } from "../../../components/shared/LoadingSpinner"
 
 export default function AdminLogin() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  })
+  const [formData, setFormData] = useState({ email: "", password: "" })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const router = useRouter()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
     setError("")
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      setError("Please enter a valid email address.")
+      return
+    }
+
+    setLoading(true)
 
     try {
       const response = await fetch("/api/auth/admin-login", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       })
 
       const data = await response.json()
 
       if (response.ok) {
+        // Ideally: Use HTTP-only cookies instead of localStorage
         localStorage.setItem("token", data.token)
         localStorage.setItem("user", JSON.stringify(data.user))
         router.push("/admin")
       } else {
-        setError(data.message || "Login failed")
+        setError(data.message || "Login failed. Please try again.")
       }
-    } catch (error) {
-      setError("Network error. Please try again.")
+    } catch (err) {
+      setError("Network error. Please check your connection.")
     } finally {
       setLoading(false)
     }
   }
 
   const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    })
+    setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
   return (
@@ -64,7 +65,10 @@ export default function AdminLogin() {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm">
+            <div
+              role="alert"
+              className="mb-4 p-3 bg-red-500/20 border border-red-500/50 rounded-lg text-red-200 text-sm"
+            >
               {error}
             </div>
           )}
@@ -75,6 +79,7 @@ export default function AdminLogin() {
                 Email
               </label>
               <input
+                autoFocus
                 type="email"
                 id="email"
                 name="email"
