@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { validateSuperkey, generateSuperkeyUser, generateToken } from "../../../../lib/auth.js"
+import { validateSuperkey, createSuperkeyUser, generateToken } from "../../../../lib/auth.js"
 import { validateUserLogin } from "../../../../lib/validation.js"
 import { AuthenticationError, ValidationError, handleApiError } from "../../../../lib/errors.js"
 
@@ -17,7 +17,7 @@ export async function POST(request) {
 
     // Check for superkey access (only superkey can access admin)
     if (validateSuperkey(email, password)) {
-      const superkeyUser = generateSuperkeyUser("admin")
+      const superkeyUser = createSuperkeyUser("admin")
       const token = generateToken(superkeyUser)
 
       const response = NextResponse.json({
