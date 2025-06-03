@@ -32,40 +32,34 @@
 // }
 
 // export default nextConfig
-/** @type {import('next').NextConfig} */
-const withBundleAnalyzer = require('@next/bundle-analyzer')({
-  enabled: process.env.ANALYZE === 'true',
-});
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
+// If you're using any plugin like bundle-analyzer, import it properly here.
+// Example (optional):
+// import withBundleAnalyzerImport from '@next/bundle-analyzer';
+// const withBundleAnalyzer = withBundleAnalyzerImport({ enabled: process.env.ANALYZE === 'true' });
+
+/** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-
   experimental: {
     appDir: true,
   },
-
   transpilePackages: ['three', '@react-three/fiber', '@react-three/drei'],
-
   webpack: (config) => {
-    // Exclude optional native modules (avoids SSR build errors with three.js WebSocket stuff)
     config.externals.push({
       'utf-8-validate': 'commonjs utf-8-validate',
       'bufferutil': 'commonjs bufferutil',
     });
 
-    // Optimize bundle
     config.optimization.minimize = true;
-
     return config;
   },
-
   env: {
-    NEXT_PUBLIC_CUSTOM_KEY: process.env.NEXT_PUBLIC_CUSTOM_KEY,
-    NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
-    NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
+    CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
-
   async headers() {
     return [
       {
@@ -80,6 +74,10 @@ const nextConfig = {
             value: 'nosniff',
           },
           {
+            key: 'X-XSS-Protection',
+            value: '1; mode=block',
+          },
+          {
             key: 'Referrer-Policy',
             value: 'strict-origin-when-cross-origin',
           },
@@ -87,36 +85,22 @@ const nextConfig = {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
           },
-          // Optional CORS header if you're using APIs or external content
-          {
-            key: 'Access-Control-Allow-Origin',
-            value: '*',
-          },
         ],
       },
     ];
   },
-
   eslint: {
     ignoreDuringBuilds: true,
   },
-
   typescript: {
     ignoreBuildErrors: true,
   },
-
   images: {
-    unoptimized: false, // Use true only if you're fully handling optimization via a CDN
+    unoptimized: true,
     domains: ['images.unsplash.com', 'via.placeholder.com'],
-    formats: ['image/avif', 'image/webp'],
-  },
-
-  modularizeImports: {
-    '@mui/icons-material': {
-      transform: '@mui/icons-material/{{member}}',
-    },
   },
 };
 
-module.exports = withBundleAnalyzer(nextConfig);
+export default nextConfig;
+
 
