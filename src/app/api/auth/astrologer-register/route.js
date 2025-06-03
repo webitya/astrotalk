@@ -1,3 +1,5 @@
+export const runtime = 'nodejs' // 👈 Ensure Node.js runtime for compatibility with nodemailer
+
 import { NextResponse } from "next/server"
 import { createUser, findUserByEmail } from "../../../../lib/database.js"
 import { hashPassword } from "../../../../lib/auth.js"
@@ -33,7 +35,7 @@ export async function POST(request) {
       phone,
       password: hashedPassword,
       role: "astrologer",
-      isVerified: false, // Pending admin approval
+      isVerified: false,
       isOnline: false,
       specialization,
       experience,
@@ -44,7 +46,7 @@ export async function POST(request) {
       totalConsultations: 0,
     })
 
-    // Send application confirmation email
+    // Send application confirmation and admin notification emails
     try {
       await sendEmail({
         to: email,
@@ -52,7 +54,6 @@ export async function POST(request) {
         html: generateAstrologerApplicationEmail(name),
       })
 
-      // Send notification to admin
       if (process.env.ADMIN_EMAIL) {
         await sendEmail({
           to: process.env.ADMIN_EMAIL,
